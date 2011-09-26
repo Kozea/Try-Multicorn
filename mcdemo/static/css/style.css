@@ -1,0 +1,28 @@
+#console .jquery-console-inner{
+  width: 90%;
+  height: 40em;
+  background: #333;
+  padding: 0.5em;
+  overflow-y: scroll;
+  overflow-x:  scroll;
+  word-wrap:  no;
+  white-space: pre;
+}
+
+
+#console .jquery-console-prompt-box{
+  color:  #fff;
+  font-family:  monospace;
+}
+
+#console .jquery-console-focus span.jquery-console-cursor {
+  background:  #fefefe;
+  color:  #333;
+  font-weight:  bold;
+}
+
+#console .jquery-console-message{
+  color: #1ad027;
+  font-family: monospace;
+  padding: 0.1em;
+}
