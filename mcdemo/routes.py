@@ -1,14 +1,18 @@
 # -*- coding: utf-8 -*-
 from flask import render_template, Response, jsonify
 from flask import request
-from mcdemo.db import db
+from mcdemo.db import db, get_admin_bind, GrantSelect
 from sqlalchemy.exc import ProgrammingError
-from json import dumps, JSONEncoder
+from sqlalchemy_fdw import ForeignTable
+from sqlalchemy import Column, MetaData
+from sqlalchemy.sql import text
+
+import json
 import datetime
 from itertools import islice, izip_longest, izip
-from .tabletypes import TABLE_TYPES
+from .tabletypes import TABLE_TYPES, TYPES
 
-class Encoder(JSONEncoder):
+class Encoder(json.JSONEncoder):
     """Encoder used for dumping database's values"""
 
     def default(self, obj):
@@ -33,7 +37,7 @@ def format_table(result):
     """
     colslength = []
     # Dump everything to json strings
-    result = [result.keys()] + [[unicode(dumps(item, cls=Encoder))
+    result = [result.keys()] + [[unicode(json.dumps(item, cls=Encoder))
                 for item in line]
                 for line in  islice(result, 0, 50)]
     # Compute line length
@@ -54,12 +58,14 @@ def format_table(result):
     yield u"( %d lines )" % lines
 
 
-
 def register(app):
+    FDW_SERVER = app.config['DB_FDW_SERVER']
+    metadata = MetaData()
 
     @app.route('/')
     def index():
-        return render_template('index.html', table_types=TABLE_TYPES)
+        return render_template('index.html', table_types=TABLE_TYPES,
+                column_types=TYPES.keys())
 
     @app.route('/js/multicorn.js')
     def multicornjs():
@@ -72,13 +78,24 @@ def register(app):
             result = db.session.bind.execute(request.values.get('query'));
         except ProgrammingError as e:
             return jsonify({'result': e.message})
-        truc = list(format_table(result))
-        table = [{'msg': line} for line in truc]
+        table = [{'msg': line} for line in format_table(result)]
         return jsonify({'result': table})
 
     @app.route('/tables/add', methods=('post',))
     def add_table():
-        pass
-
-
-
+        definition = json.loads(request.data)
+        columns = [Column(column['name'], TYPES[column['type']])
+                for column in definition['columns']]
+        table_type = TABLE_TYPES[definition['table_type']]
+        if definition['name'] in metadata.tables:
+            return jsonify({'error': 'The table already exists!'})
+        for option in definition['options']:
+            assert option in (table_type.required_options + table_type.allowed_options)
+        definition['options']['wrapper'] = table_type.wrapper
+        table = ForeignTable(definition['name'], metadata, *columns, fdw_server=FDW_SERVER,
+                fdw_options=definition['options'])
+        if table.exists(bind=get_admin_bind()):
+            return jsonify({'error': 'The table already exists!'})
+        table.create(bind=get_admin_bind())
+        GrantSelect(definition['name'], 'multicorn').execute(get_admin_bind())
+        return jsonify({'hugesuccess': True})

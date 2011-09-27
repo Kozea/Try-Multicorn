@@ -6,6 +6,7 @@
     </script>
     <script src="{{ url_for('static', filename='js/jquery-1.4.2.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/jquery-console.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/jquery-multiInput.js') }}"></script>
     <script src="{{ url_for('multicornjs') }}"></script>
 </script>
 <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" type="text/css" />
@@ -15,16 +16,61 @@
       <header>
         <h1>Try multicorn !</h1>
       </header>
-      <aside>
+      <article>
         <p>Multicorn is a python binding for postgresql foreign wrapper.</p>
         <p>We have defined several tables, with which you can play !:
         <ul>
           <li>A github table, wich you can use to query github projects</li>
           <li>A reddit table, presenting the front page</li>
         </ul>
-        </aside>
-        <aside>
-        </aside>
+      </article>
+      <article>
+        <form action="{{ url_for('add_table') }}" method="post"
+          id="create_table_form">
+          <label for="table_name">Table name:</label>
+          <input type="text" name="table_name" id="table_name"/>
+          <label for="table_type">Table type:</label>
+          <select id="table_type" name="table_type">
+            <option value="" selected="">Please choose one..</option>
+            {% for table_type_id, table_type  in table_types.items() %}
+            <option value="{{table_type_id}}">{{table_type.name}}</option>
+            {% endfor %}
+          </select>
+          <section id="options_panel">
+            {% macro gen_option(table_type_id, option) %}
+            {% set input_id = "%s_option_%s" % (table_type_id, option) %}
+              <label for="{{input_id}}">{{option}}</label>
+              <input type="text" data-option-name="{{option}}" id="{{input_id}}" {{kwargs | xmlattr}} name="{{input_id}}"/>
+            {% endmacro %}
+            {% for table_type_id, table_type in table_types.items() %}
+            <fieldset id="fieldset_{{table_type_id}}" >
+              {% for option in table_type.required_options %}
+                {{ gen_option(table_type_id, option, required=True) }}
+              {% endfor %}
+              {% for option in table_type.allowed_options %}
+                {{ gen_option(table_type_id, option) }}
+              {% endfor %}
+            </fieldset>
+            {% endfor %}
+          </section>
+          <section>
+            <h3>Columns definition</h3>
+            <article id="columns_panel">
+            <fieldset>
+              <label for="column_#index#">Column</label>
+              <input type="text" name="column_#index#" id="column_#index#"/>
+              <label for="column_type_#index#">Type</label>
+              <select name="column_type_#index#" id="column_type_#index#">
+                {% for type in column_types %}
+                  <option value="{{type}}">{{type}}</option>
+                {% endfor %}
+              </select>
+            </fieldset>
+            </article>
+          </section>
+          <input type="submit" value="Create !" id="create_table_button"/>
+        </form>
+      </article>
       <section id="console"/>
     </section>
   </body>

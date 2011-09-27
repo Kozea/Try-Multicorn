@@ -18,6 +18,9 @@ def app():
                 template_folder=template_folder)
     app.config.update(config.CONFIG)
     app.config['SQLALCHEMY_DATABASE_URI'] = config.CONFIG["DB_URL"]
+    app.config['SQLALCHEMY_BINDS'] = {
+        'admin': config.CONFIG["DB_URL_ADMIN"]
+    }
     db.init_app(app)
     handler = make_colored_stream_handler()
     getLogger('werkzeug').addHandler(handler)
@@ -28,5 +31,4 @@ def app():
     app.logger.handlers = []
     app.logger.addHandler(handler)
     routes.register(app)
-
     return app

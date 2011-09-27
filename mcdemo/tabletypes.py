@@ -1,6 +1,14 @@
 from mcdemo.db import db
 
-ANY_TYPE = (db.Unicode, db.Integer, db.Numeric, db.DateTime, db.Date)
+TYPES = {
+        'Unicode': db.Unicode,
+        'Integer': db.Integer,
+        'Numeric': db.Numeric,
+        'DateTime': db.DateTime,
+        'Date': db.Date
+}
+
+ANY_TYPE = tuple(TYPES.values())
 
 class TableType(object):
 
@@ -8,7 +16,8 @@ class TableType(object):
             allowed_columns=(), info=""):
         self.name = name
         self.wrapper = wrapper
-        self.options = allowed_options
+        self.required_options = required_options
+        self.allowed_options = allowed_options
         self.allowed_columns = allowed_columns
         self.info = info
 
