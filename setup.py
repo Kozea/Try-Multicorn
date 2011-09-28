@@ -19,7 +19,7 @@ options = dict(
     license="BSD",
     platforms="Any",
     packages=find_packages(),
-    install_requires=["flask>=0.7", 'flask-sqlalchemy', 'csstyle'],
+    install_requires=["flask>=0.7", 'flask-sqlalchemy'],
     classifiers=[
         "Development Status :: WIP",
         "Intended Audience :: Public",
