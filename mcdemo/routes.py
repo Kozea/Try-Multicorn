@@ -12,6 +12,7 @@ import datetime
 from itertools import islice, izip_longest, izip
 from .tabletypes import TABLE_TYPES, TYPES
 
+
 class Encoder(json.JSONEncoder):
     """Encoder used for dumping database's values"""
 
@@ -44,7 +45,8 @@ def format_table(result):
     lines = len(result) - 1
     for line in result:
         colslength = [max(len(item), length)
-                for item, length in izip_longest(line, colslength, fillvalue=0)]
+                for item, length
+                in izip_longest(line, colslength, fillvalue=0)]
     # Caution: the spaces are replaced by non breaking spaces
     result = (u' | '.join([item.center(length).replace(u' ', u' ')
                 for item, length in izip(line, colslength)])
@@ -52,13 +54,14 @@ def format_table(result):
     yield next(result)
     # Add 3 characters for each columns separation, minus 3 because we
     # don't need one for the last column.
-    yield u'-' * ( sum((length + 3 for length in colslength)) -3)
+    yield u'-' * (sum(length + 3 for length in colslength) - 3)
     for line in result:
         yield line
     yield u"( %d lines )" % lines
 
 
 def register(app):
+    """Register all routes to the application"""
     FDW_SERVER = app.config['DB_FDW_SERVER']
     metadata = MetaData()
 
@@ -75,7 +78,7 @@ def register(app):
     @app.route('/query/', methods=('post',))
     def send_query():
         try:
-            result = db.session.bind.execute(text(request.values.get('query')));
+            result = db.session.bind.execute(text(request.values.get('query')))
         except ProgrammingError as e:
             return jsonify({'result': e.message})
         table = [{'msg': line} for line in format_table(result)]
@@ -90,9 +93,11 @@ def register(app):
         if definition['name'] in metadata.tables:
             return jsonify({'error': 'The table already exists!'})
         for option in definition['options']:
-            assert option in (table_type.required_options + table_type.allowed_options)
+            assert option in (table_type.required_options +
+                    table_type.allowed_options)
         definition['options']['wrapper'] = table_type.wrapper
-        table = ForeignTable(definition['name'], metadata, *columns, fdw_server=FDW_SERVER,
+        table = ForeignTable(definition['name'], metadata, *columns,
+                fdw_server=FDW_SERVER,
                 fdw_options=definition['options'])
         if table.exists(bind=get_admin_bind()):
             return jsonify({'error': 'The table already exists!'})

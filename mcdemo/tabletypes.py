@@ -10,6 +10,7 @@ TYPES = {
 
 ANY_TYPE = tuple(TYPES.values())
 
+
 class TableType(object):
 
     def __init__(self, name, wrapper, required_options=(), allowed_options=(),
@@ -20,7 +21,6 @@ class TableType(object):
         self.allowed_options = allowed_options
         self.allowed_columns = allowed_columns
         self.info = info
-
 
 
 TABLE_TYPES = {

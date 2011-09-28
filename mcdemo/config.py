@@ -9,4 +9,3 @@ CONFIG = {
     "DB_URL_ADMIN": "pgfdw://multicorn_admin@localhost:5432/multicorn",
     "DB_FDW_SERVER": "multicorn_srv"
 }
-

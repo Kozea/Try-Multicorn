@@ -8,7 +8,8 @@ import os
 
 ROOT = os.path.dirname(__file__)
 
-def app():
+
+def make_app():
     """Initializes the mcdemo application"""
     static_folder = os.path.join(ROOT, 'static')
     template_folder = os.path.join(ROOT, 'templates')
