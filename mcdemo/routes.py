@@ -75,7 +75,7 @@ def register(app):
     @app.route('/query/', methods=('post',))
     def send_query():
         try:
-            result = db.session.bind.execute(request.values.get('query'));
+            result = db.session.bind.execute(text(request.values.get('query')));
         except ProgrammingError as e:
             return jsonify({'result': e.message})
         table = [{'msg': line} for line in format_table(result)]
